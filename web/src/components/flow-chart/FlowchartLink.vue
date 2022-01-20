@@ -1,29 +1,35 @@
 <template>
-  <g @mouseover="handleMouseOver" @mouseleave="handleMouseLeave">
+  <g
+    @mouseover="handleMouseOver"
+    @mouseleave="handleMouseLeave"
+    @click="linkClick"
+  >
     <path :d="dAttr" :style="pathStyle"></path>
 
     <text
-      v-if="label !== ''"
+      v-show="useWeight"
       text-anchor="middle"
       class="lines-label"
-      @click="labelClick"
       :transform="labelTransform"
     >
       {{ label }}
     </text>
 
-    <a v-if="show.delete" @click="deleteLink">
-      <text text-anchor="middle" :transform="arrowTransform" font-size="22">
-        &times;
-      </text>
-    </a>
-
     <path
-      v-else
       d="M -1 -1 L 0 1 L 1 -1 z"
       :style="arrowStyle"
       :transform="arrowTransform"
     ></path>
+
+    <a v-if="show.delete">
+      <text
+        text-anchor="middle"
+        :transform="editButtonTransform"
+        font-size="22"
+      >
+        &#9997;
+      </text>
+    </a>
   </g>
 </template>
 
@@ -34,41 +40,41 @@ export default {
     // start point position [x, y]
     start: {
       type: Array,
-      default() {
-        return [0, 0];
-      },
+      default: () => [0, 0],
     },
     // end point position [x, y]
     end: {
       type: Array,
-      default() {
-        return [0, 0];
-      },
+      default: () => [0, 0],
     },
     id: Number,
     label: {
       type: String,
+      default: () => "",
+    },
+    useWeight: {
+      type: Boolean,
+      default: () => false,
     },
   },
   data() {
     return {
       show: {
         delete: false,
+        mouseOver: false,
       },
     };
   },
   methods: {
-    labelClick() {
-      console.log('CLICK');
-      this.$emit("labelClick");
+    linkClick() {
+      this.$emit("linkClick");
     },
     handleMouseOver() {
-      if (this.id) {
-        this.show.delete = true;
-      }
+      this.show.mouseOver = true;
     },
     handleMouseLeave() {
       this.show.delete = false;
+      this.show.mouseOver = false;
     },
     caculateCenterPoint() {
       // caculate arrow position: the center point between start and end
@@ -91,11 +97,19 @@ export default {
   },
   computed: {
     pathStyle() {
-      return {
-        stroke: "rgb(255, 136, 85)",
-        strokeWidth: 2.73205,
-        fill: "none",
-      };
+      if (this.show.mouseOver) {
+        return {
+          stroke: "rgb(255, 136, 85)",
+          strokeWidth: 4.73205,
+          fill: "transparent",
+        };
+      } else {
+        return {
+          stroke: "rgb(255, 136, 85)",
+          strokeWidth: 2.73205,
+          fill: "transparent",
+        };
+      }
     },
     arrowStyle() {
       return {
@@ -112,6 +126,10 @@ export default {
     labelTransform() {
       const [x, y] = this.caculateCenterPoint();
       return `translate(${x}, ${y - 10})`;
+    },
+    editButtonTransform() {
+      const [x, y] = this.caculateCenterPoint();
+      return `translate(${x}, ${y})`;
     },
     dAttr() {
       let cx = this.start[0],
@@ -131,8 +149,8 @@ export default {
 <style scoped lang="scss">
 g {
   cursor: pointer;
-  .lines-label {
-    cursor: text;
-  }
+  // .lines-label {
+  //   cursor: text;
+  // }
 }
 </style>

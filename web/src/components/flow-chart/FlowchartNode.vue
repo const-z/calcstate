@@ -195,9 +195,9 @@ $portSize: 12;
       }
     }
     &.node-warning {
-      box-shadow: 0 0 0 2px yellow;
+      box-shadow: 0 0 0 2px goldenrod;
       .node-type {
-        background: yellow;
+        background: goldenrod;
       }
     }
 

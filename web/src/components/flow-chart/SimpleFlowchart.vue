@@ -5,7 +5,39 @@
     @mouseup="handleUp"
     @mousedown="handleDown"
   >
-    <input v-show="false" type="text" value="" style="position: absolute" ref="linkLabel" />
+    <!-- LINK EDITOR -->
+    <div v-show="editLink" class="edit-link-tools" ref="editLinkTools">
+      <div class="edit-link-tools-controls">
+        <input
+          id="weightValue"
+          ref="weightValue"
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          v-model="newLink.weight"
+          :disabled="!newLink.useWeight"
+        />
+        <label for="weightValue">{{ newLink.weight }}</label>
+      </div>
+      <div class="edit-link-tools-buttons">
+        <button title="Удалить" @click="linkDelete(newLink.id)">
+          &#10005;
+        </button>
+        <div style="display: flex">
+          <button
+            title="Отменить"
+            style="margin-right: 8px; font-weight: bold; transform: scaleX(-1)"
+            @click="endEditLink"
+          >
+            &#10140;
+          </button>
+          <button title="Сохранить" @click="linkSave">&#10004;</button>
+        </div>
+      </div>
+    </div>
+    <!-- /LINK EDITOR -->
+
     <svg width="100%" :height="`${height}%`">
       <flowchart-link
         v-bind.sync="link"
@@ -13,8 +45,7 @@
         :key="`link${index}`"
         :label="link.label"
         :ref="`link${link.id}`"
-        @deleteLink="linkDelete(link.id)"
-        @labelClick="labelClick(link.id)"
+        @linkClick="startEditLink(link.id)"
       ></flowchart-link>
     </svg>
     <flowchart-node
@@ -58,6 +89,12 @@ export default {
   },
   data() {
     return {
+      editLink: false,
+      newLink: {
+        id: null,
+        weight: 0,
+        useWeight: true,
+      },
       action: {
         linking: false,
         dragging: false,
@@ -108,6 +145,7 @@ export default {
           end: [ex, ey],
           id: link.id,
           label: link.weight !== undefined ? `${link.weight}` : undefined,
+          useWeight: ![fromNode.type, toNode.type].includes("incident"),
         };
       });
       if (this.draggingLink) {
@@ -129,11 +167,33 @@ export default {
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
   },
   methods: {
-    labelClick(id) {
-      const link = this.lines.find((l) => l.id === id);
-      this.$refs.linkLabel.value = link.label;
-      this.$refs.linkLabel.style.left = `${100}px`;
-      this.$refs.linkLabel.style.top = `${100}px`;
+    endEditLink() {
+      this.editLink = false;
+      this.newLink.id = null;
+      this.newLink.weight = 1;
+      this.newLink.useWeight = true;
+    },
+    startEditLink(id) {
+      const link = this.scene.links.find((item) => item.id === id);
+      const line = this.$refs[`link${id}`][0];
+      const center = line.caculateCenterPoint();
+      const labelBox = line.$el.children[1].getBBox();
+      const x = center[0] + labelBox.x;
+      const y = center[1] + labelBox.y;
+
+      this.newLink.weight = link.weight || 1;
+      this.newLink.id = id;
+      this.$refs.editLinkTools.style.left = `${x}px`;
+      this.$refs.editLinkTools.style.top = `${y}px`;
+      this.editLink = true;
+
+      const fromNode = this.findNodeWithID(link.from);
+      const toNode = this.findNodeWithID(link.to);
+
+      if ([fromNode.type, toNode.type].includes("incident")) {
+        this.newLink.useWeight = false;
+        this.newLink.weight = 1;
+      }
     },
     findNodeWithID(id) {
       return this.scene.nodes.find((item) => {
@@ -180,6 +240,20 @@ export default {
       }
       this.draggingLink = null;
     },
+    linkSave() {
+      const id = this.newLink.id;
+      const link = this.scene.links.find((item) => {
+        return item.id === id;
+      });
+      const fromNode = this.findNodeWithID(link.from);
+      const toNode = this.findNodeWithID(link.to);
+
+      if (![fromNode.type, toNode.type].includes("incident")) {
+        this.$set(link, "weight", this.newLink.weight);
+      }
+
+      this.endEditLink();
+    },
     linkDelete(id) {
       const deletedLink = this.scene.links.find((item) => {
         return item.id === id;
@@ -190,6 +264,7 @@ export default {
         });
         this.$emit("linkBreak", deletedLink);
       }
+      this.endEditLink();
     },
     nodeSelected(id, e) {
       this.action.dragging = id;
@@ -306,6 +381,45 @@ export default {
   flex: 1 1 auto;
   svg {
     cursor: grab;
+  }
+}
+
+.edit-link-tools {
+  position: absolute;
+  display: flex;
+  padding: 8px;
+  width: 200px;
+  z-index: 100;
+  background-color: white;
+  flex-direction: column;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+
+  .edit-link-tools-controls {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 8px;
+
+    input {
+      flex: 1;
+    }
+
+    label {
+      flex: 0;
+      align-self: center;
+    }
+  }
+
+  .edit-link-tools-buttons {
+    padding-top: 8px;
+    border-top: 1px solid darkgray;
+    display: flex;
+    justify-content: space-between;
+
+    button {
+      width: 30px;
+      height: 30px;
+    }
   }
 }
 </style>

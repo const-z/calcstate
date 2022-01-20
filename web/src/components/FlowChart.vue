@@ -1,11 +1,11 @@
 <template>
   <div class="flowchart-panel">
     <div v-show="!addingNode" class="show-add-node-tools">
-      <button @click="addingNode = true">&plus;</button>
+      <button @click="addingNode = true" title="Добавить">&plus;</button>
     </div>
 
     <div v-show="!addingNode" class="calc">
-      <button @click="calc">&sum;</button>
+      <button @click="calc" title="Расчитать">&sum;</button>
     </div>
 
     <div v-show="addingNode" class="add-node-tools">

@@ -71,11 +71,6 @@ const sampleData: DataScheme = {
     },
   ],
   links: [
-    // { id: 11, from: 6, to: 1,  weight: 1.0 },
-    // { id: 12, from: 7, to: 1,  weight: 0.7 },
-    // { id: 13, from: 8, to: 1,  weight: 0.7 },
-    // { id: 14, from: 9, to: 2,  weight: 0.5 },
-    // { id: 19, from: 10, to: 3, weight: 0.3 },
     { id: 11, from: 6, to: 1 },
     { id: 12, from: 7, to: 1 },
     { id: 13, from: 8, to: 1 },

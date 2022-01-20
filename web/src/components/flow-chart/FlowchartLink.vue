@@ -1,16 +1,23 @@
 <template>
   <g @mouseover="handleMouseOver" @mouseleave="handleMouseLeave">
     <path :d="dAttr" :style="pathStyle"></path>
-    <text v-if="label !== ''" text-anchor="middle" :transform="labelTransform">
+
+    <text
+      v-if="label !== ''"
+      text-anchor="middle"
+      class="lines-label"
+      @click="labelClick"
+      :transform="labelTransform"
+    >
       {{ label }}
     </text>
-    <!-- <input type="text" value="asd"/> -->
-    <button>TEST</button>
+
     <a v-if="show.delete" @click="deleteLink">
       <text text-anchor="middle" :transform="arrowTransform" font-size="22">
         &times;
       </text>
     </a>
+
     <path
       v-else
       d="M -1 -1 L 0 1 L 1 -1 z"
@@ -51,8 +58,11 @@ export default {
     };
   },
   methods: {
+    labelClick() {
+      console.log('CLICK');
+      this.$emit("labelClick");
+    },
     handleMouseOver() {
-      console.log(this.text);
       if (this.id) {
         this.show.delete = true;
       }
@@ -121,5 +131,8 @@ export default {
 <style scoped lang="scss">
 g {
   cursor: pointer;
+  .lines-label {
+    cursor: text;
+  }
 }
 </style>

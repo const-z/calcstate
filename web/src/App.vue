@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <flow-chart ref="chart" />
+    <flow-chart />
   </div>
 </template>
 

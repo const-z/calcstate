@@ -5,13 +5,16 @@
     @mouseup="handleUp"
     @mousedown="handleDown"
   >
+    <input v-show="false" type="text" value="" style="position: absolute" ref="linkLabel" />
     <svg width="100%" :height="`${height}%`">
       <flowchart-link
         v-bind.sync="link"
         v-for="(link, index) in lines"
         :key="`link${index}`"
         :label="link.label"
+        :ref="`link${link.id}`"
         @deleteLink="linkDelete(link.id)"
+        @labelClick="labelClick(link.id)"
       ></flowchart-link>
     </svg>
     <flowchart-node
@@ -113,7 +116,6 @@ export default {
         x = this.scene.centerX + fromNode.x;
         y = this.scene.centerY + fromNode.y;
         [cx, cy] = this.getPortPosition("bottom", x, y);
-        // push temp dragging link, mouse cursor postion = link end postion
         lines.push({
           start: [cx, cy],
           end: [this.draggingLink.mx, this.draggingLink.my],
@@ -125,9 +127,14 @@ export default {
   mounted() {
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
-    // console.log(22222, this.rootDivOffset);
   },
   methods: {
+    labelClick(id) {
+      const link = this.lines.find((l) => l.id === id);
+      this.$refs.linkLabel.value = link.label;
+      this.$refs.linkLabel.style.left = `${100}px`;
+      this.$refs.linkLabel.style.top = `${100}px`;
+    },
     findNodeWithID(id) {
       return this.scene.nodes.find((item) => {
         return id === item.id;

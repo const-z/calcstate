@@ -1,6 +1,5 @@
 <template>
   <div class="flowchart-panel">
-    <!-- <div class="tool-wrapper">TEXT</div> -->
     <div class="tool-wrapper">
       <div class="tool-control">
         <label for="node-type">Тип</label>

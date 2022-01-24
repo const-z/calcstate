@@ -15,6 +15,7 @@
     }"
   >
     <div
+      v-show="type !== 'incident'"
       class="node-port node-input"
       @mousedown="inputMouseDown"
       @mouseup="inputMouseUp"

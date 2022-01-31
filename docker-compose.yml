@@ -2,7 +2,7 @@ version: '3'
 
 services:
   api:
-    entrypoint: npm run start:dev --inspect-brk
+    entrypoint: npm run start:debug
     build: 
       context: ./api
       dockerfile: ./Dockerfile
@@ -11,8 +11,8 @@ services:
       - 9000:3000
     volumes:
       - ./api:/app/api
+      - ./api/dist:/app/api/dist
       - /app/api/node_modules
-      - /app/api/dist
     networks:
       - calcstate-net
 
@@ -28,6 +28,32 @@ services:
       - ./web:/app/web
       - /app/web/node_modules
       - /app/web/dist
+    networks:
+      - calcstate-net
+  
+  arangodb:
+    image: arangodb:3.8.4
+    ports:
+      - 8529:8529
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    environment:
+      #- ARANGO_ROOT_PASSWORD
+      #- ARANGO_ROOT_PASSWORD_FILE
+      - ARANGO_NO_AUTH=1
+      #- ARANGO_RANDOM_ROOT_PASSWORD
+    networks:
+      - calcstate-net
+
+  postgresql:
+    image: postgres:14.1
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
     networks:
       - calcstate-net
       

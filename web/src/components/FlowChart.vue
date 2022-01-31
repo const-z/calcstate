@@ -4,8 +4,12 @@
       <button @click="addingNode = true" title="Добавить">&plus;</button>
     </div>
 
-    <div v-show="!addingNode" class="calc">
+    <div v-show="!addingNode" class="calc-button">
       <button @click="calc" title="Расчитать">&sum;</button>
+    </div>
+
+    <div class="save-button">
+      <button @click="save" title="Сохранить">&#128427;</button>
     </div>
 
     <div v-show="addingNode" class="add-node-tools">
@@ -112,19 +116,23 @@ export default {
         incidentLevel: 0.5,
       };
     },
-    calc: async function () {
-      const data = {
-        nodes: this.scene.nodes,
-        links: this.scene.links,
-      };
-      data.nodes.forEach((n) => {
-        delete n.state;
-      });
-      const response = await axios.post(`${server.baseURL}/api/calc`, data);
+    loadData: async function () {
+      const response = await axios.get(`${server.baseURL}/api/data`);
       this.scene = {
         ...this.scene,
         ...response.data,
       };
+    },
+    calc: async function () {
+      // const data = {
+      //   nodes: this.scene.nodes,
+      //   links: this.scene.links,
+      // };
+      // data.nodes.forEach((n) => {
+      //   delete n.state;
+      // });
+      await axios.post(`${server.baseURL}/api/calc`);
+      await this.loadData();
     },
   },
   data: () => {
@@ -147,11 +155,7 @@ export default {
     };
   },
   async mounted() {
-    const response = await axios.get(`${server.baseURL}/api/data`);
-    this.scene = {
-      ...this.scene,
-      ...response.data,
-    };
+    await this.loadData();
   },
 };
 </script>
@@ -192,7 +196,8 @@ label {
   }
 }
 
-.calc {
+.calc-button,
+.save-button {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -213,6 +218,10 @@ label {
     border: none;
     font-size: 22pt;
   }
+}
+
+.save-button {
+  top: 180px;
 }
 
 .add-node-tools {

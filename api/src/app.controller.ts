@@ -1,31 +1,30 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { AppService, DataScheme } from './app.service';
+import { AppService } from './app.service';
+import { DataScheme } from './calc-state.service';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Get('generate')
+  generateData() {
+    return this.appService.generateBigData();
   }
 
   @Get('data')
-  getData(): DataScheme {
-    return this.appService.getData();
+  async getData(): Promise<DataScheme> {
+    const data = await this.appService.getData();
+
+    return data;
   }
 
   @Post('data')
-  async saveScheme(@Body() payload: any) {
-    console.log(payload);
-
-    return true;
+  async saveScheme(@Body() payload: DataScheme) {
+    await this.appService.save(payload);
   }
 
   @Post('calc')
-  calc(@Body() payload: any): DataScheme {
-    const data = this.appService.calc(payload);
-
-    return data;
+  async calc(@Body() payload?: { id: string | number }): Promise<void> {
+    await this.appService.calc(payload);
   }
 }

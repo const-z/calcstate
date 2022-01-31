@@ -1,26 +1,6 @@
 import { Injectable } from '@nestjs/common';
-
-interface Node {
-  id: number;
-  type: string;
-  label: string;
-  level?: number;
-  state?: number;
-  x?: number;
-  y?: number;
-}
-
-interface Link {
-  id: number;
-  from: number;
-  to: number;
-  weight?: number;
-}
-
-export interface DataScheme {
-  nodes: Node[];
-  links: Link[];
-}
+import { CalcStateService, DataScheme, Node } from './calc-state.service';
+import { StoreService } from './store.service';
 
 const sampleData: DataScheme = {
   nodes: [
@@ -86,42 +66,148 @@ const sampleData: DataScheme = {
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
-  }
+  private readonly storeName = 'bigdata';
 
-  getData(): DataScheme {
-    return sampleData;
-  }
+  async generateBigData() {
+    const store = new StoreService(this.storeName);
+    const count = 10000;
 
-  calc(data: DataScheme) {
-    for (const node of data.nodes.filter((n) => n.type === 'asset')) {
-      node.state = Number(this.calcNode(node, data).toFixed(4));
+    await store.saveNodes([], true);
+    await store.saveLinks([], true);
+
+    for (let i = 1; i <= count; i++) {
+      const node = {
+        id: i,
+        type: 'asset',
+        label: `Актив ${i}`,
+        x: 0,
+        y: i * 10,
+      };
+
+      await store.saveNodes([node]);
+
+      if (i < count) {
+        const link = {
+          id: count + node.id,
+          from: node.id,
+          to: node.id + 1,
+          weight: 0.5,
+        };
+        await store.saveLinks([link]);
+      }
     }
+
+    await store.saveNodes([
+      {
+        id: 10001,
+        type: 'incident',
+        label: 'Инцидент 1',
+        level: 0.8,
+        x: -288,
+        y: -63,
+      },
+      {
+        id: 10002,
+        type: 'incident',
+        label: 'Инцидент 2',
+        level: 0.8,
+        x: -288,
+        y: -63,
+      },
+    ]);
+
+    await store.saveLinks([
+      {
+        id: count + 10001,
+        from: 10001,
+        to: 1,
+      },
+      {
+        id: count + 10002,
+        from: 10002,
+        to: 1,
+      },
+    ]);
+  }
+
+  async getData(): Promise<DataScheme> {
+    const store = new StoreService(this.storeName);
+    const [nodes, links] = await Promise.all([
+      store.getNodes(),
+      store.getLinks(),
+    ]);
+
+    return {
+      nodes,
+      links,
+    };
+  }
+
+  async calc({ id }: { id?: string | number }) {
+    // const store = new StoreService(this.storeName);
+    // const node = await store.getNodeById(10000);
+    // const schema = await this.getData();
+
+    // CalcStateService.calcNode(node, schema);
+
+    // return node;
+    console.time('CALC');
+    // const state = await this.calcNodeState(id);
+    const state = await this.calcAffectedNodes(id);
+    console.log('STATE', state);
+
+    const data = this.getData();
+    console.timeEnd('CALC');
 
     return data;
   }
 
-  private calcNode(node: Node, data: DataScheme): number {
-    if (node.type === 'incident') {
-      return node.level;
-    } else if (node.type === 'asset') {
-      if (node.state) {
-        return node.state;
+  async save(schema: DataScheme) {
+    const store = new StoreService(this.storeName);
+    await store.saveNodes(schema.nodes, true);
+    await store.saveLinks(schema.links, true);
+  }
+
+  async calcNodeState(nodeId?: string | number): Promise<number> {
+    const store = new StoreService(this.storeName);
+    const nodes = await store.getAffectsToNode(nodeId);
+
+    let state = 1;
+
+    for (const n of nodes) {
+      let nState = n.state;
+      if (nState === null && n.weight > 0) {
+        nState = await this.calcNodeState(n.id);
       }
-      const linksToNode = data.links.filter((l) => l.to === node.id);
-      const states = [];
-      for (const link of linksToNode) {
-        const fromNode = data.nodes.find((n) => n.id === link.from);
-        const nodeState = this.calcNode(fromNode, data);
-        states.push({
-          state: nodeState,
-          weight: link.weight === undefined ? 1 : link.weight,
-        });
-      }
-      return (
-        1 - states.reduce((p, { state, weight }) => p * (1 - state * weight), 1)
-      );
+      state = state * (1 - nState * n.weight);
+    }
+
+    state = 1 - state;
+
+    await store.updateNode(nodeId, { state: Number(state.toFixed(2)) });
+
+    return state;
+  }
+
+  async calcAffectedNodes(nodeId: string | number) {
+    const store = new StoreService(this.storeName);
+    let affected: Node[];
+
+    if (nodeId) {
+      affected = await store.getAffectedNodes(nodeId);
+      affected.unshift({ id: nodeId } as Node);
+    } else {
+      affected = (await store.getNodes()).filter((n) => n.type !== 'incident');
+    }
+
+    for (const aNode of affected) {
+      const nodes = await store.getAffectsToNode(aNode.id);
+      const state =
+        1 -
+        nodes.reduce((p, c) => {
+          return p * (1 - c.state * c.weight);
+        }, 1);
+      await store.updateNode(aNode.id, { state: Number(state.toFixed(2)) });
     }
   }
 }

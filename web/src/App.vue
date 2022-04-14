@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 import FlowChart from "./components/FlowChart.vue";
 import { server } from "./constants";
 
@@ -17,6 +19,24 @@ export default {
     return {
       msg: `Welcome to Your Vue.js App ${server.baseURL}`,
     };
+  },
+  methods: {
+    getNewStoreName: async function () {
+      const {
+        data: { storeName },
+      } = await axios.get(`${server.baseURL}/api/unique-store-name`);
+
+      return storeName;
+    },
+  },
+
+  async beforeMount() {
+    const { pathname } = new URL(location.href);
+
+    if (!pathname || pathname === "/") {
+      const storeName = await this.getNewStoreName();
+      window.location = `/${storeName}`;
+    }
   },
 };
 </script>

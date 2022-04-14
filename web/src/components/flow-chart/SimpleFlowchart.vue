@@ -20,6 +20,52 @@
         />
         <label for="weightValue">{{ newLink.weight }}</label>
       </div>
+      <div v-show="newLink.useWeight">
+        <!-- <label for="cluster-1">0</label> -->
+          <!-- v-checked="newLink.cluster" -->
+        <input
+          type="radio"
+          class="cluster-none"
+          :value="null"
+          v-model="newLink.cluster"
+        />
+        <input
+          type="radio"
+          class="cluster-1"
+          value="#ff0000"
+          v-model="newLink.cluster"
+        />
+        <input
+          type="radio"
+          class="cluster-2"
+          value="#29a329"
+          v-model="newLink.cluster"
+        />
+        <input
+          type="radio"
+          class="cluster-3"
+          value="#0040ff"
+          v-model="newLink.cluster"
+        />
+        <input
+          type="radio"
+          class="cluster-4"
+          value="#cc00cc"
+          v-model="newLink.cluster"
+        />
+        <input
+          type="radio"
+          class="cluster-5"
+          value="#ac7339"
+          v-model="newLink.cluster"
+        />
+        <input
+          type="radio"
+          class="cluster-6"
+          value="#ffcc00"
+          v-model="newLink.cluster"
+        />
+      </div>
       <div class="edit-link-tools-buttons">
         <button title="Удалить" @click="linkDelete(newLink.id)">
           &#10005;
@@ -44,6 +90,7 @@
         v-for="(link, index) in lines"
         :key="`link${index}`"
         :label="link.label"
+        :cluster="link.cluster"
         :ref="`link${link.id}`"
         @linkClick="startEditLink(link.id)"
       ></flowchart-link>
@@ -94,6 +141,7 @@ export default {
         id: null,
         weight: 0,
         useWeight: true,
+        cluster: null,
       },
       action: {
         linking: false,
@@ -146,6 +194,7 @@ export default {
           id: link.id,
           label: link.weight !== undefined ? `${link.weight}` : undefined,
           useWeight: ![fromNode.type, toNode.type].includes("incident"),
+          cluster: link.cluster || null,
         };
       });
       if (this.draggingLink) {
@@ -183,6 +232,7 @@ export default {
 
       this.newLink.weight = link.weight || 1;
       this.newLink.id = id;
+      this.newLink.cluster = link.cluster || null;
       this.$refs.editLinkTools.style.left = `${x}px`;
       this.$refs.editLinkTools.style.top = `${y}px`;
       this.editLink = true;
@@ -250,6 +300,7 @@ export default {
 
       if (![fromNode.type, toNode.type].includes("incident")) {
         this.$set(link, "weight", this.newLink.weight);
+        this.$set(link, "cluster", this.newLink.cluster);
       }
 
       this.endEditLink();
@@ -322,7 +373,6 @@ export default {
           typeof target.className === "string" &&
           target.className.indexOf("node-delete") > -1
         ) {
-          // console.log('delete2', this.action.dragging);
           this.nodeDelete(this.action.dragging);
         }
       }
@@ -332,7 +382,6 @@ export default {
     },
     handleDown(e) {
       const target = e.target || e.srcElement;
-      // console.log('for scroll', target, e.keyCode, e.which)
       if (
         (target === this.$el || target.matches("svg, svg *")) &&
         e.which === 1
@@ -420,6 +469,51 @@ export default {
       width: 30px;
       height: 30px;
     }
+  }
+
+  input[type="radio"] {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 3px solid lightgray;
+    outline: none;
+
+    &.cluster-none {
+      background-color: #ffffff;
+    }
+    &.cluster-1 {
+      background-color: #ff0000;
+    }
+    &.cluster-2 {
+      background-color: #29a329;
+    }
+    &.cluster-3 {
+      background-color: #0040ff;
+    }
+    &.cluster-4 {
+      background-color: #cc00cc;
+    }
+    &.cluster-5 {
+      background-color: #ac7339;
+    }
+    &.cluster-6 {
+      background-color: #ffcc00;
+    }
+    &.cluster-7 {
+      background-color: #cc3300;
+    }
+    &.cluster-8 {
+      background-color: #00ffff;
+    }
+  }
+
+  input[type="radio"]:hover {
+    // box-shadow:0 0 20px 0px orange inset;
+    border-color: grey;
+  }
+
+  input[type="radio"]:checked {
+    border-color: black;
   }
 }
 </style>

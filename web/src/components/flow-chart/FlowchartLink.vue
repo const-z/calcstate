@@ -34,6 +34,9 @@
 </template>
 
 <script>
+
+const defaultColor = "rgb(255, 136, 85)";
+
 export default {
   name: "FlowchartLink",
   props: {
@@ -56,6 +59,10 @@ export default {
       type: Boolean,
       default: () => false,
     },
+    cluster: {
+      type: String,
+      default: () => null,
+    }
   },
   data() {
     return {
@@ -94,18 +101,26 @@ export default {
     deleteLink() {
       this.$emit("deleteLink");
     },
+    getColor() {
+      if (this.$props.cluster) {
+        return this.$props.cluster;
+      }
+
+      return defaultColor;
+    }
   },
   computed: {
     pathStyle() {
+      const color = this.getColor();
       if (this.show.mouseOver) {
         return {
-          stroke: "rgb(255, 136, 85)",
+          stroke: color,
           strokeWidth: 4.73205,
           fill: "transparent",
         };
       } else {
         return {
-          stroke: "rgb(255, 136, 85)",
+          stroke: color,
           strokeWidth: 2.73205,
           fill: "transparent",
         };
@@ -113,7 +128,7 @@ export default {
     },
     arrowStyle() {
       return {
-        stroke: "rgb(255, 136, 85)",
+        stroke: this.getColor(),
         strokeWidth: 5.73205,
         fill: "none",
       };

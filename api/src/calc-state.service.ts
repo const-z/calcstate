@@ -8,13 +8,27 @@ export interface Node {
   y?: number;
 }
 
+export interface ArangoNode extends Node {
+  _id: string;
+  _key: string;
+  _rev: string;
+}
+
 export interface Link {
   id: number;
   from: number;
   to: number;
   weight?: number;
+  cluster?: string | null;
 }
 
+export interface ArangoLink extends Link {
+  _id: string;
+  _from: string;
+  _key: string;
+  _rev: string;
+  _to: string;
+}
 export interface DataScheme {
   nodes: Node[];
   links: Link[];
@@ -23,6 +37,7 @@ export interface DataScheme {
 export interface AffectsNode extends Node {
   weight: number;
   link: Link;
+  threshold?: number;
 }
 
 export class CalcStateService {

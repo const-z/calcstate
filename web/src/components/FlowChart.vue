@@ -1,15 +1,15 @@
 <template>
   <div class="flowchart-panel">
+    <div class="save-button" :class="{ changed: this.changed }">
+      <button @click="save" title="Сохранить">&#128427;</button>
+    </div>
+
     <div v-show="!addingNode" class="show-add-node-tools">
       <button @click="addingNode = true" title="Добавить">&plus;</button>
     </div>
 
     <div v-show="!addingNode" class="calc-button">
       <button @click="calc" title="Расчитать">&sum;</button>
-    </div>
-
-    <div class="save-button">
-      <button @click="save" title="Сохранить">&#128427;</button>
     </div>
 
     <div v-show="addingNode" class="add-node-tools">
@@ -100,13 +100,19 @@ export default {
       this.scene.nodes.push(node);
       this.cancel();
     },
-    save: async function () {
+    save: async function (doCancel = true) {
+      const { pathname } = new URL(location.href);
       const data = {
         nodes: this.scene.nodes,
         links: this.scene.links,
       };
-      await axios.post(`${server.baseURL}/api/data`, data);
-      this.cancel();
+      await axios.post(`${server.baseURL}/api/data${pathname}`, data);
+
+      this.changed = false;
+
+      if (doCancel) {
+        this.cancel();
+      }
     },
     cancel: function () {
       this.addingNode = false;
@@ -117,21 +123,25 @@ export default {
       };
     },
     loadData: async function () {
-      const response = await axios.get(`${server.baseURL}/api/data`);
+      const { pathname } = new URL(location.href);
+      const response = await axios.get(`${server.baseURL}/api/data${pathname}`);
       this.scene = {
         ...this.scene,
         ...response.data,
       };
+      setTimeout(() => {
+        this.dataLoaded = true;
+      }, 300);
+      console.log(`Data loaded from ${pathname}`);
     },
     calc: async function () {
-      // const data = {
-      //   nodes: this.scene.nodes,
-      //   links: this.scene.links,
-      // };
-      // data.nodes.forEach((n) => {
-      //   delete n.state;
-      // });
-      await axios.post(`${server.baseURL}/api/calc`);
+      const { pathname } = new URL(location.href);
+
+      if (this.changed) {
+        await this.save(false);
+      }
+
+      await axios.post(`${server.baseURL}/api/calc${pathname}`);
       await this.loadData();
     },
   },
@@ -152,10 +162,36 @@ export default {
       },
       nodeCategory: ["asset", "incident"],
       nodeIncidentsLevels: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+      changed: false,
+      dataLoaded: false,
     };
   },
   async mounted() {
     await this.loadData();
+
+    this.saveInterval = setInterval(async () => {
+      if (this.changed) {
+        console.log(`${new Date().toISOString()} - save`);
+        await this.save(false);
+      }
+    }, 5000);
+  },
+
+  unmounted() {
+    clearInterval(this.saveInterval);
+  },
+
+  watch: {
+    scene: {
+      handler() {
+        if (!this.changed) {
+          console.log("Data changed");
+        }
+
+        this.changed = this.dataLoaded;
+      },
+      deep: true,
+    },
   },
 };
 </script>
@@ -179,7 +215,7 @@ label {
   align-items: center;
   position: absolute;
   left: 20px;
-  top: 20px;
+  top: 100px;
   z-index: 100;
   background-color: white;
   padding: 8px;
@@ -188,11 +224,13 @@ label {
   border-radius: 36px;
   height: 36px;
   width: 36px;
+  cursor: pointer;
 
   button {
     background: none;
     border: none;
     font-size: 42px;
+    cursor: pointer;
   }
 }
 
@@ -203,25 +241,33 @@ label {
   align-items: center;
   position: absolute;
   left: 20px;
-  top: 100px;
+  top: 180px;
   z-index: 100;
   background-color: white;
   padding: 8px;
-  border-radius: 4px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   border-radius: 36px;
   height: 36px;
   width: 36px;
+  cursor: pointer;
 
   button {
     background: none;
     border: none;
     font-size: 22pt;
+    cursor: pointer;
   }
 }
 
 .save-button {
-  top: 180px;
+  top: 20px;
+  color: green;
+  box-shadow: 0 0 10px 5px rgb(0, 200, 0);
+
+  &.changed {
+    color: red;
+    box-shadow: 0 0 10px 5px rgb(200, 0, 0);
+  }
 }
 
 .add-node-tools {

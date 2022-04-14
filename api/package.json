@@ -25,7 +25,15 @@
     "@nestjs/config": "^1.1.6",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
+    "@types/d3": "^7.1.0",
     "arangojs": "^7.6.1",
+    "d3": "^7.3.0",
+    "dagre": "^0.8.5",
+    "graphology": "^0.23.2",
+    "graphology-layout": "^0.5.0",
+    "graphology-layout-force": "^0.2.4",
+    "graphology-layout-forceatlas2": "^0.8.1",
+    "nanoid": "^3.3.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0"
@@ -43,6 +51,7 @@
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "graphology-types": "^0.23.0",
     "jest": "^27.2.5",
     "prettier": "^2.3.2",
     "source-map-support": "^0.5.20",
@@ -51,7 +60,7 @@
     "ts-loader": "^9.2.3",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.5.5"
   },
   "jest": {
     "moduleFileExtensions": [

@@ -1,5 +1,12 @@
 import { CollectionType, Database } from 'arangojs';
-import { AffectsNode, Link, Node } from './calc-state.service';
+import {
+  AffectsNode,
+  ArangoLink,
+  ArangoNode,
+  Link,
+  Node,
+} from './calc-state.service';
+import * as dagre from 'dagre';
 
 export class StoreService {
   private db: Database;
@@ -63,38 +70,38 @@ export class StoreService {
     return data;
   }
 
-  async getNodes() {
+  async getNodes(): Promise<ArangoNode[]> {
     await Promise.all([
       this.getCollection(CollectionType.DOCUMENT_COLLECTION),
       this.getCollection(CollectionType.EDGE_COLLECTION),
     ]);
 
-    const data = await (
+    const data = (await (
       await this.db.query({
         query: 'FOR n IN @@nodesCollection RETURN n',
         bindVars: {
           '@nodesCollection': this.nodesCollectionName,
         },
       })
-    ).all();
+    ).all()) as ArangoNode[];
 
     return data;
   }
 
-  async getLinks() {
+  async getLinks(): Promise<ArangoLink[]> {
     await Promise.all([
       this.getCollection(CollectionType.DOCUMENT_COLLECTION),
       this.getCollection(CollectionType.EDGE_COLLECTION),
     ]);
 
-    const data = await (
+    const data = (await (
       await this.db.query({
         query: 'FOR n IN @@edgesCollection RETURN n',
         bindVars: {
           '@edgesCollection': this.edgesCollectionName,
         },
       })
-    ).all();
+    ).all()) as ArangoLink[];
 
     return data;
   }
@@ -163,6 +170,13 @@ export class StoreService {
     }
 
     await collection.saveAll(edges, { overwriteMode: 'update' });
+  }
+
+  async checkExists() {
+    const collection = this.db.collection(this.nodesCollectionName);
+    const result = await collection.exists();
+
+    return result;
   }
 
   private async getCollection(type: CollectionType) {

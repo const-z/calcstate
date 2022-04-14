@@ -293,10 +293,10 @@ export class AppService {
 
   getInfluenceThreshold(incidentLevel: number) {
     const lvlThreshold = [
-      { from: 0, to: 0.5, v: 0.5 },
-      { from: 0.5, to: 0.7, v: 0.7 },
+      { from: 0, to: 0.3, v: 0.5 },
+      { from: 0.3, to: 0.5, v: 0.7 },
+      { from: 0.5, to: 0.7, v: 1 },
       { from: 0.7, to: 1, v: 1 },
-      { from: 1, to: 1, v: 1 },
     ];
 
     let result = lvlThreshold[3][1];

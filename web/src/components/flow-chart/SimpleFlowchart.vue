@@ -16,13 +16,11 @@
           max="1"
           step="0.1"
           v-model="newLink.weight"
-          :disabled="!newLink.useWeight"
+          :disabled="!newLink.useWeight || newLink.cluster"
         />
         <label for="weightValue">{{ newLink.weight }}</label>
       </div>
       <div v-show="newLink.useWeight">
-        <!-- <label for="cluster-1">0</label> -->
-          <!-- v-checked="newLink.cluster" -->
         <input
           type="radio"
           class="cluster-none"
@@ -214,6 +212,16 @@ export default {
   mounted() {
     this.rootDivOffset.top = this.$el ? this.$el.offsetTop : 0;
     this.rootDivOffset.left = this.$el ? this.$el.offsetLeft : 0;
+  },
+  watch: {
+    newLink: {
+      handler(val) {
+        if (val.cluster) {
+          this.newLink.weight = 1;
+        }
+      },
+      deep: true,
+    },
   },
   methods: {
     endEditLink() {

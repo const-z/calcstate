@@ -34,7 +34,6 @@
 </template>
 
 <script>
-
 const defaultColor = "rgb(255, 136, 85)";
 
 export default {
@@ -62,7 +61,7 @@ export default {
     cluster: {
       type: String,
       default: () => null,
-    }
+    },
   },
   data() {
     return {
@@ -107,7 +106,7 @@ export default {
       }
 
       return defaultColor;
-    }
+    },
   },
   computed: {
     pathStyle() {
@@ -164,8 +163,8 @@ export default {
 <style scoped lang="scss">
 g {
   cursor: pointer;
-  // .lines-label {
-  //   cursor: text;
-  // }
+  .lines-label {
+    font-size: 10px;
+  }
 }
 </style>

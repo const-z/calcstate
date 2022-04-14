@@ -186,11 +186,21 @@ export default {
         x = this.scene.centerX + toNode.x;
         y = this.scene.centerY + toNode.y;
         [ex, ey] = this.getPortPosition("top", x, y);
+        let label = '';
+        
+        if (![fromNode.type, toNode.type].includes("incident")) {
+          if (link.weight === undefined) {
+            label = 1;
+          } else {
+            label = link.weight;
+          }
+        }
+
         return {
           start: [cx, cy],
           end: [ex, ey],
           id: link.id,
-          label: link.weight !== undefined ? `${link.weight}` : undefined,
+          label,
           useWeight: ![fromNode.type, toNode.type].includes("incident"),
           cluster: link.cluster || null,
         };
@@ -238,7 +248,7 @@ export default {
       const x = center[0] + labelBox.x;
       const y = center[1] + labelBox.y;
 
-      this.newLink.weight = link.weight || 1;
+      this.newLink.weight = link.weight === undefined ? 1 : link.weight;
       this.newLink.id = id;
       this.newLink.cluster = link.cluster || null;
       this.$refs.editLinkTools.style.left = `${x}px`;
@@ -307,7 +317,7 @@ export default {
       const toNode = this.findNodeWithID(link.to);
 
       if (![fromNode.type, toNode.type].includes("incident")) {
-        this.$set(link, "weight", this.newLink.weight);
+        this.$set(link, "weight", Number(this.newLink.weight));
         this.$set(link, "cluster", this.newLink.cluster);
       }
 

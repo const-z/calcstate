@@ -125,7 +125,7 @@ export class StoreService {
       await this.db.query({
         query: `
           FOR node, link IN 1..1 INBOUND @nodeId @@edgeCollection 
-            LET data = node.type == "incident" ? { state: node.level, weight: 1 } : { state: node.state, weight: link.weight }
+            LET data = node.type == "incident" ? { state: node.level, weight: 1 } : { state: node.state, weight: link.weight || 1 }
             RETURN MERGE(node, { link }, data)
         `,
         bindVars: {

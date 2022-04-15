@@ -34,7 +34,7 @@
 </template>
 
 <script>
-const defaultColor = "rgb(255, 136, 85)";
+const defaultColor = "rgb(115, 115, 115)";
 
 export default {
   name: "FlowchartLink",

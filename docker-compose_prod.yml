@@ -1,0 +1,91 @@
+version: '3'
+
+services:
+  api:
+    entrypoint: npm run start:dev --inspect-brk
+    build: 
+      context: ./api
+      dockerfile: ./Dockerfile
+#    ports:
+#      - 9229:9229
+#      - 9030:3000
+    volumes:
+      - ./api:/app/api
+      - /app/api/node_modules
+      - /app/api/dist
+    networks:
+      - calcstate-net
+
+  web:
+    entrypoint: npm run serve
+    build: 
+      context: ./web
+      dockerfile: ./Dockerfile
+#    ports:
+#      - 9230:9229
+#      - 9031:8080
+    volumes:
+      - ./web:/app/web
+      - /app/web/node_modules
+      - /app/web/dist
+    networks:
+      - calcstate-net
+      
+  nginx:
+    image: nginx
+    ports:
+      - 9090:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - calcstate-net
+
+networks:
+  calcstate-net:
+    driver: bridge
+
+# version: '3'
+# 
+# services:
+#   api:
+#     entrypoint: npm run start:dev --inspect-brk
+#     build: 
+#       context: ./api
+#       dockerfile: ./Dockerfile
+#     ports:
+#       - 9229:9229
+#       - 9000:3000
+#     volumes:
+#       - ./api:/app/api
+#       - /app/api/node_modules
+#       - /app/api/dist
+#     networks:
+#       - calcstate-net
+# 
+#   web:
+#     entrypoint: npm run serve
+#     build: 
+#       context: ./web
+#       dockerfile: ./Dockerfile
+#     ports:
+#       - 9230:9229
+#       - 9001:8080
+#     volumes:
+#       - ./web:/app/web
+#       - /app/web/node_modules
+#       - /app/web/dist
+#     networks:
+#       - calcstate-net
+#       
+#   nginx:
+#     image: nginx
+#     ports:
+#       - 9090:80
+#     volumes:
+#       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#     networks:
+#       - calcstate-net
+# 
+# networks:
+#   calcstate-net:
+#     driver: bridge
